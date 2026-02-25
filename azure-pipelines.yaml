@@ -28,14 +28,14 @@ stages:
           - script: trivy --version
             displayName: 'Check Trivy version'
 
-          - task: NodeTool@0
-            inputs:
-              versionSpec: '18.x'
+          # - task: NodeTool@0
+          #   inputs:
+          #     versionSpec: '18.x'
       
-          - script: |
-              yarn install
-              yarn build
-            displayName: 'Build Frontend'
+          # - script: |
+          #     yarn install
+          #     yarn build
+          #   displayName: 'Build Frontend'
 
           - task: Docker@2
             displayName: 'Build docker image'  
@@ -63,7 +63,7 @@ stages:
             inputs:
               command: 'push'
               containerRegistry: 'DOCKER_HUB'
-              repository: $(dockerimagerep
+              repository: $(dockerimagerep)
               tags: |
                 $(dockerImagetag)
 
