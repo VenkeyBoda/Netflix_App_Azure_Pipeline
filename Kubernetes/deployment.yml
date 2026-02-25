@@ -5,7 +5,7 @@ metadata:
   labels:
     app: netflix-app
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: netflix-app
@@ -16,6 +16,27 @@ spec:
     spec:
       containers:
       - name: netflix-app
-        image: sevenajay/netflix:latest
+        image: venkeyboda/netflix:627
+        resources: 
+          limits:
+            cpu: 500m
+            memory: 256M
+          requests:
+            cpu: 100m
+            memory: 64M
+        livenessProbe: 
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe: 
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 10            
         ports:
         - containerPort: 80

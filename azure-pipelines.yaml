@@ -1,72 +1,137 @@
-pool: 
+pool:
   vmImage: 'ubuntu-latest'
 
 trigger:
-  - main
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/*
+      - Dockerfile
+      - package.json
+      - Infra/*
+      - Kubernetes/*
 
 variables:
   dockerimagerepo: 'venkeyboda/netflix'
   dockerImagetag: '$(Build.BuildId)'
 
-# build and push docker image with using CI
-
 stages:
-  - stage: CI
-    jobs:
-      - job: build
-        displayName: 'Building and testing'
 
-        steps:
-          - script: |
-              sudo apt-get install wget apt-transport-https gnupg lsb-release -y
-              wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-              echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
-              sudo apt-get update
-              sudo apt-get install trivy -y  
-            displayName: 'Install Trivy'  
-       
-          - script: trivy --version
-            displayName: 'Check Trivy version'
+# ========================= CI STAGE =========================
+- stage: CI
+  displayName: "Build & Push Docker Image"
+  condition: |
+    or(
+      contains(variables['Build.SourceVersionMessage'], 'src'),
+      contains(variables['Build.SourceVersionMessage'], 'Dockerfile'),
+      contains(variables['Build.SourceVersionMessage'], 'package.json')
+    )
+  jobs:
+    - job: build
+      displayName: 'Building and testing'
 
-          # - task: NodeTool@0
-          #   inputs:
-          #     versionSpec: '18.x'
-      
-          # - script: |
-          #     yarn install
-          #     yarn build
-          #   displayName: 'Build Frontend'
+      steps:
+        - script: |
+            sudo apt-get update
+            sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+            echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+            sudo apt-get update
+            sudo apt-get install trivy -y  
+          displayName: 'Install Trivy'  
 
-          - task: Docker@2
-            displayName: 'Build docker image'  
-            inputs:
-              command: 'build'
-              Dockerfile: 'Dockerfile'
-              # buildContext: '.'
-              repository: $(dockerimagerepo)
-              tags: |
-                $(dockerImagetag)
-              arguments: |
-                 --build-arg TMDB_V3_API_KEY=$(TMDB_V3_API_KEY)  
+        - script: trivy --version
+          displayName: 'Check Trivy version'
 
-          - task: CmdLine@2
-            displayName: 'scannig image '
-            inputs:
-              script: |
-                trivy image $(dockerimagerepo):$(dockerImagetag) -o trivy-report.xml
+        - task: Docker@2
+          displayName: 'Build docker image'  
+          inputs:
+            command: 'build'
+            Dockerfile: 'Dockerfile'
+            repository: $(dockerimagerepo)
+            tags: |
+              $(dockerImagetag)
+            arguments: |
+              --build-arg TMDB_V3_API_KEY=$(TMDB_V3_API_KEY)
 
-          - task: PublishPipelineArtifact@1
-            displayName: 'Publish Trivy Report'
-            inputs:
-              targetPath: 'trivy-report.xml'
-              artifact: 'TrivyReport'                
+        - task: CmdLine@2
+          displayName: 'Scanning image'
+          inputs:
+            script: |
+              trivy image $(dockerimagerepo):$(dockerImagetag) -o trivy-report.xml
 
-          - task: Docker@2
-            displayName: 'Push docker image'
-            inputs:
-              command: 'push'
-              containerRegistry: 'DOCKER_HUB'
-              repository: $(dockerimagerepo)
-              tags: |
-                $(dockerImagetag)
-  
+        - task: PublishPipelineArtifact@1
+          displayName: 'Publish Trivy Report'
+          inputs:
+            targetPath: 'trivy-report.xml'
+            artifact: 'TrivyReport'
+
+        - task: Docker@2
+          displayName: 'Push docker image'
+          inputs:
+            command: 'push'
+            containerRegistry: 'DOCKER_HUB'
+            repository: $(dockerimagerepo)
+            tags: |
+              $(dockerImagetag)
+
+# ========================= CD STAGE =========================
+- stage: CD
+  displayName: "Deploy to AKS"
+  dependsOn: []
+  condition: succeeded()
+  jobs:
+    - job: Deploy
+      displayName: 'Deploy into cluster'
+
+      steps:
+        - script: |
+            sudo apt-get update
+            sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+            echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+            sudo apt-get update
+            sudo apt-get install trivy -y  
+          displayName: 'Install Trivy'
+
+        - script: trivy --version
+          displayName: 'Check Trivy version'
+
+        - task: CmdLine@2
+          displayName: 'Docker image Pull'
+          inputs:
+            script: |
+              echo "Pulling image $(dockerimagerepo):$(dockerImagetag)"
+              docker pull $(dockerimagerepo):$(dockerImagetag)
+
+        - task: CmdLine@2
+          displayName: 'Scanning image'
+          inputs:
+            script: |
+              trivy image $(dockerimagerepo):$(dockerImagetag) -o trivy-report.xml
+
+        - task: PublishPipelineArtifact@1
+          displayName: 'Publish Trivy Report'
+          inputs:
+            targetPath: 'trivy-report.xml'
+            artifact: 'TrivyReport'
+
+        - task: Bash@3
+          displayName: 'Terraform initialization'
+          inputs:
+            targetType: 'inline'
+            workingDirectory: './Infra'
+            script: |
+              terraform init
+              terraform apply -var-file="test.tfvars" -auto-approve
+
+        - task: Bash@3
+          displayName: 'AKS Deployment'
+          inputs:
+            targetType: 'inline'
+            script: |
+              kubectl apply -f Kubernetes/
+              kubectl get all
+              
