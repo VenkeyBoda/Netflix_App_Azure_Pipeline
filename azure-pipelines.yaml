@@ -46,6 +46,8 @@ stages:
               repository: $(dockerimagerepo)
               tags: |
                 $(dockerImagetag)
+              arguments: |
+                 --build-arg TMDB_V3_API_KEY=$(TMDB_V3_API_KEY)  
 
           - task: CmdLine@2
             displayName: 'scannig image '
@@ -67,4 +69,4 @@ stages:
               repository: $(dockerimagerepo)
               tags: |
                 $(dockerImagetag)
-
+  
