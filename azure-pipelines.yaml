@@ -42,7 +42,7 @@ stages:
             inputs:
               command: 'build'
               Dockerfile: 'Dockerfile'
-              buildContext: '.'
+              # buildContext: '.'
               repository: $(dockerimagerepo)
               tags: |
                 $(dockerImagetag)
