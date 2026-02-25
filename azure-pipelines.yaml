@@ -22,12 +22,12 @@ stages:
 # ========================= CI STAGE =========================
 - stage: CI
   displayName: "Build & Push Docker Image"
-  # condition: |
-  #   or(
-  #     contains(variables['Build.SourceVersionMessage'], 'src'),
-  #     contains(variables['Build.SourceVersionMessage'], 'Dockerfile'),
-  #     contains(variables['Build.SourceVersionMessage'], 'package.json')
-  #   )
+  condition: |
+    or(
+      contains(variables['Build.SourceVersionMessage'], 'src'),
+      contains(variables['Build.SourceVersionMessage'], 'Dockerfile'),
+      contains(variables['Build.SourceVersionMessage'], 'package.json')
+    )
   jobs:
     - job: build
       displayName: 'Building and testing'
@@ -105,7 +105,7 @@ stages:
           inputs:
             script: |
               echo "Pulling image $(dockerimagerepo):$(dockerImagetag)"
-              docker pull $(dockerimagerepo):latest
+              docker pull $(dockerimagerepo):630
 
         - task: CmdLine@2
           displayName: 'Scanning image'
@@ -136,4 +136,3 @@ stages:
               kubectl apply -f Kubernetes/
               kubectl get all
 
-              
