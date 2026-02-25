@@ -1,6 +1,12 @@
-.git
-.gitignore
 node_modules
 dist
+build
+.git
+.gitignore
 Dockerfile
-azure-pipelines.yml
+docker-compose.yml
+README.md
+.vscode
+.env
+.env.*
+coverage
