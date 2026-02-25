@@ -41,7 +41,7 @@ stages:
             displayName: 'Build docker image'  
             inputs:
               command: 'build'
-              Dockerfile: 'Dockerfile'
+              Dockerfile: './Dockerfile'
               repository: $(dockerimagerepo)
               tags: |
                 $(dockerImagetag)
