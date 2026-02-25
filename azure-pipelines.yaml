@@ -1,8 +1,9 @@
-pool: Default
+pool: 
+  vmImage: 'ubuntu-latest'
 
 trigger:
   - main
-  
+
 variables:
   dockerimagerepo: 'venkeyboda/netflix'
   dockerImagetag: '$(Build.BuildId)'
