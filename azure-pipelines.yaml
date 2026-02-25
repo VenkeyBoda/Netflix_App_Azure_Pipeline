@@ -112,11 +112,11 @@ stages:
             script: |
               trivy image $(dockerimagerepo):$(dockerImagetag) -o trivy-report.xml
 
-        - task: PublishPipelineArtifact@1
-          displayName: 'Publish Trivy Report (CD)'
-          inputs:
-            targetPath: 'trivy-report.xml'
-            artifact: 'TrivyReport'
+        # - task: PublishPipelineArtifact@1
+        #   displayName: 'Publish Trivy Report (CD)'
+        #   inputs:
+        #     targetPath: 'trivy-report.xml'
+        #     artifact: 'TrivyReport'
 
         - task: Bash@3
           displayName: 'Terraform initialization'
