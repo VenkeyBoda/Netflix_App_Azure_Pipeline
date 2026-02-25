@@ -1,0 +1,68 @@
+pool: Default
+
+trigger:
+  - main
+  
+variables:
+  dockerimagerepo: 'venkeyboda/netflix'
+  dockerImagetag: '$(Build.BuildId)'
+
+# build and push docker image with using CI
+
+stages:
+  - stage: CI
+    jobs:
+      - job: build
+        displayName: 'Building and testing'
+
+        steps:
+          - script: |
+              sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+              wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+              echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+              sudo apt-get update
+              sudo apt-get install trivy -y  
+            displayName: 'Install Trivy'  
+       
+          - script: trivy --version
+            displayName: 'Check Trivy version'
+
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '18.x'
+      
+          - script: |
+              yarn install
+              yarn build
+            displayName: 'Build Frontend'
+
+          - task: Docker@2
+            displayName: 'Build docker image'  
+            inputs:
+              command: 'build'
+              Dockerfile: 'Dockerfile'
+              repository: $(dockerimagerepo)
+              tags: |
+                $(dockerImagetag)
+
+          - task: CmdLine@2
+            displayName: 'scannig image '
+            inputs:
+              script: |
+                trivy image $(dockerimagerepo):$(dockerImagetag) -o trivy-report.xml
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Trivy Report'
+            inputs:
+              targetPath: 'trivy-report.xml'
+              artifact: 'TrivyReport'                
+
+          - task: Docker@2
+            displayName: 'Push docker image'
+            inputs:
+              command: 'push'
+              containerRegistry: 'DOCKER_HUB'
+              repository: $(dockerimagerep
+              tags: |
+                $(dockerImagetag)
+
