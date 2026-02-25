@@ -135,3 +135,5 @@ stages:
             script: |
               kubectl apply -f Kubernetes/
               kubectl get all
+
+              
