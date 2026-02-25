@@ -117,11 +117,6 @@ stages:
           inputs:
             targetPath: 'trivy-report.xml'
             artifact: 'TrivyReport'
-            
-        - task: TerraformInstaller@1
-          displayName: 'Install Terraform'
-          inputs:
-            terraformVersion: 'latest'
 
         - task: Bash@3
           displayName: 'Terraform initialization'
