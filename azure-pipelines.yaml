@@ -111,7 +111,7 @@ stages:
           displayName: 'Scanning image'
           inputs:
             script: |
-              trivy image $(dockerimagerepo):$(dockerImagetag) -o trivy-report.xml
+              trivy image $(dockerimagerepo) -o trivy-report.xml
 
         - task: PublishPipelineArtifact@1
           displayName: 'Publish Trivy Report'
