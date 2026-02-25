@@ -22,12 +22,12 @@ stages:
 # ========================= CI STAGE =========================
 - stage: CI
   displayName: "Build & Push Docker Image"
-  condition: |
-    or(
-      contains(variables['Build.SourceVersionMessage'], 'src'),
-      contains(variables['Build.SourceVersionMessage'], 'Dockerfile'),
-      contains(variables['Build.SourceVersionMessage'], 'package.json')
-    )
+  # condition: |
+  #   or(
+  #     contains(variables['Build.SourceVersionMessage'], 'src'),
+  #     contains(variables['Build.SourceVersionMessage'], 'Dockerfile'),
+  #     contains(variables['Build.SourceVersionMessage'], 'package.json')
+  #   )
   jobs:
     - job: build
       displayName: 'Building and testing'
