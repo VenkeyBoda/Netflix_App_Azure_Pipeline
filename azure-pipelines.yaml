@@ -41,7 +41,8 @@ stages:
             displayName: 'Build docker image'  
             inputs:
               command: 'build'
-              Dockerfile: './Dockerfile'
+              Dockerfile: 'NetFlix_Jenkins_pipeline/Dockerfile'
+              buildContext: 'NetFlix_Jenkins_pipeline'
               repository: $(dockerimagerepo)
               tags: |
                 $(dockerImagetag)
