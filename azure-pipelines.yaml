@@ -105,7 +105,7 @@ stages:
           inputs:
             script: |
               echo "Pulling image $(dockerimagerepo):$(dockerImagetag)"
-              docker pull $(dockerimagerepo):630
+              docker pull $(dockerimagerepo)
 
         - task: CmdLine@2
           displayName: 'Scanning image'
