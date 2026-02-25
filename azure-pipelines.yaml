@@ -53,6 +53,7 @@ stages:
             repository: $(dockerimagerepo)
             tags: |
               $(dockerImagetag)
+              latest
             arguments: |
               --build-arg TMDB_V3_API_KEY=$(TMDB_V3_API_KEY)
 
@@ -104,7 +105,7 @@ stages:
           inputs:
             script: |
               echo "Pulling image $(dockerimagerepo):$(dockerImagetag)"
-              docker pull $(dockerimagerepo):$(dockerImagetag)
+              docker pull $(dockerimagerepo):latest
 
         - task: CmdLine@2
           displayName: 'Scanning image'
@@ -134,4 +135,3 @@ stages:
             script: |
               kubectl apply -f Kubernetes/
               kubectl get all
-              

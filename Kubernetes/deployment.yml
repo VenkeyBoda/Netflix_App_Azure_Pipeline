@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: netflix-app
-        image: venkeyboda/netflix:627
+        image: venkeyboda/netflix:latest
         resources: 
           limits:
             cpu: 500m
