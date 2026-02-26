@@ -22,12 +22,12 @@ stages:
 # ========================= CI STAGE =========================
 - stage: CI
   displayName: "Build & Push Docker Image"
-  condition: |
-    or(
-      contains(variables['Build.SourceVersionMessage'], 'src'),
-      contains(variables['Build.SourceVersionMessage'], 'Dockerfile'),
-      contains(variables['Build.SourceVersionMessage'], 'package.json')
-    )
+  # condition: |
+  #   or(
+  #     contains(variables['Build.SourceVersionMessage'], 'src'),
+  #     contains(variables['Build.SourceVersionMessage'], 'Dockerfile'),
+  #     contains(variables['Build.SourceVersionMessage'], 'package.json')
+  #   )
   jobs:
     - job: build
       displayName: 'Building and testing'
@@ -112,12 +112,6 @@ stages:
             script: |
               trivy image $(dockerimagerepo):$(dockerImagetag) -o trivy-report.xml
 
-        # - task: PublishPipelineArtifact@1
-        #   displayName: 'Publish Trivy Report (CD)'
-        #   inputs:
-        #     targetPath: 'trivy-report.xml'
-        #     artifact: 'TrivyReport'
-
         - task: Bash@3
           displayName: 'Install Terraform'
           inputs:
@@ -149,22 +143,40 @@ stages:
               az account show
               terraform init
               terraform apply -var-file="test.tfvars" -auto-approve
-
-        # - task: Bash@3
-        #   displayName: 'Terraform initialization'
-        #   inputs:
-        #     targetType: 'inline'
-        #     workingDirectory: './Infra'
-        #     script: |
-        #       terraform init
-        #       terraform apply -var-file="test.tfvars" -auto-approve
+              az aks get-credentials --resource-group ${azurerm_resource_group.base.name} --name ${azurerm_kubernetes_cluster.base.name}"
+              kubectl get nodes
 
         - task: Bash@3
           displayName: 'AKS Deployment'
           inputs:
             targetType: 'inline'
             script: |
+              echo "Deploying manifests..."
               kubectl apply -f Kubernetes/
-              kubectl get all
 
+              echo "Waiting for deployment rollout..."
+              kubectl rollout status deployment/netflix-app --timeout=300s
+
+              echo "Waiting for LoadBalancer external IP..."
+
+              for i in {1..30}; do
+                EXTERNAL_IP=$(kubectl get svc netflix-app -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+                
+                if [ -n "$EXTERNAL_IP" ]; then
+                  echo "External IP assigned: $EXTERNAL_IP"
+                  break
+                fi
+                
+                echo "Still waiting for external IP..."
+                sleep 10
+              done
+
+              if [ -z "$EXTERNAL_IP" ]; then
+                echo "ERROR: Timed out waiting for LoadBalancer IP"
+                exit 1
+              fi
+
+              echo "Application URL: http://$EXTERNAL_IP"
+              echo "Final cluster state:"
+              kubectl get all
 

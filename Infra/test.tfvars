@@ -1,4 +1,4 @@
-resource_group_name = "tf_akscluster2"
+resource_group_name = "tf_akscluster"
 
 region = "centralindia"
 
