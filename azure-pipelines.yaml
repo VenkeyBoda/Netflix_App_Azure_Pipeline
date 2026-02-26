@@ -151,8 +151,9 @@ stages:
               terraform apply -var-file="test.tfvars" -auto-approve
 
               az aks get-credentials \
-              --resource-group ${azurerm_resource_group.base.name} \
-              --name ${azurerm_kubernetes_cluster.base.name}
+              --resource-group tf_akscluster \
+              --name AKScluster2 \
+              --overwrite-existing
 
               kubectl get nodes
 
