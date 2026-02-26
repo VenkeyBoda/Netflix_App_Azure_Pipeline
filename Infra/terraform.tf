@@ -15,7 +15,7 @@ terraform {
     # Can be passed via `-backend-config=`"container_name=<container name>"` in the `init` command.
     container_name = "workshop-tfstate"
     # Can be passed via `-backend-config=`"key=<blob key name>"` in the `init` command.
-    key = "Wokshop.tfstate"
+    key = "Workshop.tfstate"
 
   }
 

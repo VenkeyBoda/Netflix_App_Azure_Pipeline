@@ -147,7 +147,7 @@ stages:
                 terraform init -reconfigure \
                   -backend-config="resource_group_name=tfstate-rg" \
                   -backend-config="storage_account_name=venkat07" \
-                  -backend-config="container_name=workshop-tfstate" \
+                  -backend-config="container_name=Workshop.tfstate" \
                   -backend-config="key=Workshop.tfstate"
                 
                   terraform import azurerm_resource_group.base \
