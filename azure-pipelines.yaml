@@ -125,6 +125,7 @@ stages:
 
         - task: Bash@3
           displayName: 'Terraform initialization'
+          dependsOn: TerraformInstaller
           inputs:
             targetType: 'inline'
             workingDirectory: './Infra'
