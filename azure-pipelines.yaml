@@ -141,7 +141,7 @@ stages:
         - task: AzureCLI@2
           displayName: 'Terraform Init & Apply'
           inputs:
-            azureSubscription: 'AzureRM'   #service connection name
+            azureSubscription: 'azure-service-connection'   #service connection name
             scriptType: 'bash'
             scriptLocation: 'inlineScript'
             workingDirectory: './Infra'
