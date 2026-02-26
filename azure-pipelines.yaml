@@ -140,22 +140,32 @@ stages:
             scriptLocation: 'inlineScript'
             workingDirectory: './Infra'
             inlineScript: |
-              az account show
+                set -e
 
-              terraform init -reconfigure\
+                az account show
+
+                terraform init -reconfigure \
                   -backend-config="resource_group_name=tfstate-rg" \
                   -backend-config="storage_account_name=venkat07" \
                   -backend-config="container_name=workshop-tfstate" \
-                  -backend-config="key=Wokshop.tfstate"
+                  -backend-config="key=Workshop.tfstate"
 
-              terraform apply -var-file="test.tfvars" -auto-approve
+                terraform apply -var-file="test.tfvars" -auto-approve
 
-              az aks get-credentials \
-              --resource-group tf_akscluster \
-              --name AKScluster2 \
-              --overwrite-existing
+                echo "Reading Terraform outputs..."
 
-              kubectl get nodes
+                RG=$(terraform output -raw resource_group_name)
+                AKS=$(terraform output -raw aks_cluster_name)
+
+                echo "Resource Group: $RG"
+                echo "AKS Name: $AKS"
+
+                az aks get-credentials \
+                  --resource-group $RG \
+                  --name $AKS \
+                  --overwrite-existing
+
+                kubectl get nodes
 
         - task: Bash@3
           displayName: 'AKS Deployment'
