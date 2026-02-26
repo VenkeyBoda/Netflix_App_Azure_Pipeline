@@ -147,11 +147,11 @@ stages:
                 terraform init -reconfigure \
                   -backend-config="resource_group_name=tfstate-rg" \
                   -backend-config="storage_account_name=venkat07" \
-                  -backend-config="container_name=Workshop.tfstate" \
-                  -backend-config="key=Workshop.tfstate"
+                  -backend-config="container_name=workshop-tfstate" \
+                  -backend-config="key=workshop-tfstate"
                 
-                  terraform import azurerm_resource_group.base \
-                  /subscriptions/378c0d57-dbfd-4234-a90e-e479534fd83d/resourceGroups/tf_akscluster || true
+                  # terraform import azurerm_resource_group.base \
+                  # /subscriptions/378c0d57-dbfd-4234-a90e-e479534fd83d/resourceGroups/tf_akscluster || true
                 
                   terraform apply -var-file="test.tfvars" -auto-approve
 
