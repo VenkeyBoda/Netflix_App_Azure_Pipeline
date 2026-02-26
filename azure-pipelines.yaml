@@ -118,18 +118,19 @@ stages:
         #     targetPath: 'trivy-report.xml'
         #     artifact: 'TrivyReport'
 
-        - task: TerraformInstaller@1
-          displayName: 'Install Terraform'
-          inputs:
-            terraformVersion: 'latest'
+        # - task: TerraformInstaller@1
+        #   displayName: 'Install Terraform'
+        #   inputs:
+        #     terraformVersion: 'latest'
 
         - task: Bash@3
           displayName: 'Terraform initialization'
-          dependsOn: TerraformInstaller
+          # dependsOn: TerraformInstaller
           inputs:
             targetType: 'inline'
             workingDirectory: './Infra'
             script: |
+              export PATH="$PATH:/usr/local/bin"   # TerraformInstaller installs here on Ubuntu agents
               terraform init
               terraform apply -var-file="test.tfvars" -auto-approve
 
