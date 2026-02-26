@@ -22,12 +22,12 @@ stages:
 # ========================= CI STAGE =========================
 - stage: CI
   displayName: "Build & Push Docker Image"
-  # condition: |
-  #   or(
-  #     contains(variables['Build.SourceVersionMessage'], 'src'),
-  #     contains(variables['Build.SourceVersionMessage'], 'Dockerfile'),
-  #     contains(variables['Build.SourceVersionMessage'], 'package.json')
-  #   )
+  condition: |
+    or(
+      contains(variables['Build.SourceVersionMessage'], 'src'),
+      contains(variables['Build.SourceVersionMessage'], 'Dockerfile'),
+      contains(variables['Build.SourceVersionMessage'], 'package.json')
+    )
   jobs:
     - job: build
       displayName: 'Building and testing'
@@ -141,14 +141,19 @@ stages:
             workingDirectory: './Infra'
             inlineScript: |
               az account show
-              terraform init \
+
+              terraform init -reconfigure\
                   -backend-config="resource_group_name=tfstate-rg" \
                   -backend-config="storage_account_name=venkat07" \
                   -backend-config="container_name=workshop-tfstate" \
                   -backend-config="key=Wokshop.tfstate"
 
               terraform apply -var-file="test.tfvars" -auto-approve
-              az aks get-credentials --resource-group ${azurerm_resource_group.base.name} --name ${azurerm_kubernetes_cluster.base.name}"
+
+              az aks get-credentials \
+              --resource-group ${azurerm_resource_group.base.name} \
+              --name ${azurerm_kubernetes_cluster.base.name}
+
               kubectl get nodes
 
         - task: Bash@3
