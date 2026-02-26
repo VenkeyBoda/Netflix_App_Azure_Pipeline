@@ -118,40 +118,35 @@ stages:
         #     targetPath: 'trivy-report.xml'
         #     artifact: 'TrivyReport'
 
-        - task: TerraformCLI@1
-          displayName: 'Terraform Init'
+        - task: Bash@3
+          displayName: 'Install Terraform'
           inputs:
-            provider: 'azurerm'
-            command: 'init'
-            workingDirectory: './Infra'
+            targetType: 'inline'
+            script: |
+              sudo apt-get update
+              sudo apt-get install -y gnupg software-properties-common
+              wget -O- https://apt.releases.hashicorp.com/gpg | \
+                gpg --dearmor | \
+                sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+        
+              echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+              https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+              sudo tee /etc/apt/sources.list.d/hashicorp.list
+      
+              sudo apt update
+              sudo apt-get install terraform -y
+        
+              terraform -version
 
-        - task: TerraformCLI@1
-          displayName: 'Terraform Apply'
+        - task: Bash@3
+          displayName: 'Terraform initialization'
+          # dependsOn: TerraformInstaller
           inputs:
-            provider: 'azurerm'
-            command: 'apply'
+            targetType: 'inline'
             workingDirectory: './Infra'
-            environmentServiceName: 'AzureRM'
-            ensureBackend: true
-            varsFile: 'test.tfvars'
-            allowTelemetryCollection: false
-            autoApprove: true
-
-        # - task: TerraformInstaller@1
-        #   displayName: 'Install Terraform'
-        #   inputs:
-        #     terraformVersion: 'latest'
-
-        # - task: Bash@3
-        #   displayName: 'Terraform initialization'
-        #   # dependsOn: TerraformInstaller
-        #   inputs:
-        #     targetType: 'inline'
-        #     workingDirectory: './Infra'
-        #     script: |
-        #       export PATH="$PATH:/usr/local/bin"   # TerraformInstaller installs here on Ubuntu agents
-        #       terraform init
-        #       terraform apply -var-file="test.tfvars" -auto-approve
+            script: |
+              terraform init
+              terraform apply -var-file="test.tfvars" -auto-approve
 
         - task: Bash@3
           displayName: 'AKS Deployment'
