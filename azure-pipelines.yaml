@@ -138,15 +138,26 @@ stages:
         
               terraform -version
 
-        - task: Bash@3
-          displayName: 'Terraform initialization'
-          # dependsOn: TerraformInstaller
+        - task: AzureCLI@2
+          displayName: 'Terraform Init & Apply'
           inputs:
-            targetType: 'inline'
+            azureSubscription: 'AzureRM'   #service connection name
+            scriptType: 'bash'
+            scriptLocation: 'inlineScript'
             workingDirectory: './Infra'
-            script: |
+            inlineScript: |
+              az account show
               terraform init
               terraform apply -var-file="test.tfvars" -auto-approve
+
+        # - task: Bash@3
+        #   displayName: 'Terraform initialization'
+        #   inputs:
+        #     targetType: 'inline'
+        #     workingDirectory: './Infra'
+        #     script: |
+        #       terraform init
+        #       terraform apply -var-file="test.tfvars" -auto-approve
 
         - task: Bash@3
           displayName: 'AKS Deployment'
