@@ -8,8 +8,8 @@ resource "azurerm_resource_group" "base" {
 
 resource "azurerm_kubernetes_cluster" "base" {
   name                = var.aks_cluster_info.name
-  location            = data.azurerm_resource_group.base.location
-  resource_group_name = data.azurerm_resource_group.base.name
+  location            = azurerm_resource_group.base.location
+  resource_group_name = azurerm_resource_group.base.name
   dns_prefix          = var.aks_cluster_info.dns_prefix
 
   default_node_pool {

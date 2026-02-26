@@ -19,8 +19,8 @@ variable "aks_cluster_info" {
 
 }
 
-variable "build_id" {
-  type    = string
-  default = "1"
+# variable "build_id" {
+#   type    = string
+#   default = "1"
 
-}
+# }
