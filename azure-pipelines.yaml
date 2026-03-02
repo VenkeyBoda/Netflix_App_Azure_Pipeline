@@ -5,13 +5,13 @@ trigger:
   branches:
     include:
       - main
-  paths:
-    include:
-      - src/*
-      - Dockerfile
-      - package.json
-      - Infra/*
-      - Kubernetes/*
+  # paths:
+  #   include:
+  #     - src/*
+  #     - Dockerfile
+  #     - package.json
+  #     - Infra/*
+  #     - Kubernetes/*
 
 variables:
   dockerimagerepo: 'venkeyboda/netflix'
