@@ -5,7 +5,7 @@ set -e
 # echo " Ensuring monitoring namespace exists"
 # echo "========================================="
 
-# kubectl create namespace monitoring
+kubectl get namespace monitoring >/dev/null 2>&1 || kubectl create namespace monitoring
 
 echo "========================================="
 echo " Updating Helm Dependencies"
@@ -18,8 +18,7 @@ echo " Deploying Monitoring Stack"
 echo "========================================="
 
 helm upgrade --install monitoring ./Monitoring/helm \
-  --namespace monitoring \
-  --create-namespace
+  --namespace monitoring
 
 echo "========================================="
 echo " Waiting for Grafana LoadBalancer"
