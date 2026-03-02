@@ -5,7 +5,13 @@ echo "========================================="
 echo " Ensuring monitoring namespace exists"
 echo "========================================="
 
-kubectl get namespace monitoring >/dev/null 2>&1 || kubectl create namespace monitoring
+# Create namespace only if it does not exist
+if ! kubectl get namespace monitoring >/dev/null 2>&1; then
+  echo "Namespace does not exist. Creating..."
+  kubectl create namespace monitoring
+else
+  echo "Namespace already exists. Continuing..."
+fi
 
 echo "========================================="
 echo " Updating Helm Dependencies"
