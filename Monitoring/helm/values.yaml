@@ -4,4 +4,4 @@ grafana:
   service:
     type: LoadBalancer
 
-namespace: monitoring
+# namespace: monitoring
