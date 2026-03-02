@@ -3,5 +3,3 @@ grafana:
   adminPassword: Admin@123
   service:
     type: LoadBalancer
-
-# namespace: monitoring
