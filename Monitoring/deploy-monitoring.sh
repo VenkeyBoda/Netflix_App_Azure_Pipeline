@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-# echo "========================================="
-# echo " Ensuring monitoring namespace exists"
-# echo "========================================="
+echo "========================================="
+echo " Ensuring monitoring namespace exists"
+echo "========================================="
 
 kubectl get namespace monitoring >/dev/null 2>&1 || kubectl create namespace monitoring
 
