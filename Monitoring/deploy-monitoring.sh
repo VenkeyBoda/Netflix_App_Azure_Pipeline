@@ -2,18 +2,6 @@
 set -e
 
 echo "========================================="
-echo " Ensuring monitoring namespace exists"
-echo "========================================="
-
-# Create namespace only if it does not exist
-if ! kubectl get namespace monitoring >/dev/null 2>&1; then
-  echo "Namespace does not exist. Creating..."
-  kubectl create namespace monitoring
-else
-  echo "Namespace already exists. Continuing..."
-fi
-
-echo "========================================="
 echo " Updating Helm Dependencies"
 echo "========================================="
 
@@ -24,7 +12,8 @@ echo " Deploying Monitoring Stack"
 echo "========================================="
 
 helm upgrade --install monitoring ./Monitoring/helm \
-  --namespace monitoring
+  --namespace monitoring \
+  --create-namespace
 
 echo "========================================="
 echo " Waiting for Grafana LoadBalancer"
