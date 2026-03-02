@@ -22,28 +22,28 @@ stages:
 # ========================= CI STAGE =========================
 - stage: CI
   displayName: "Build & Push Docker Image"
-  condition: |
-    or(
-      contains(variables['Build.SourceVersionMessage'], 'src'),
-      contains(variables['Build.SourceVersionMessage'], 'Dockerfile'),
-      contains(variables['Build.SourceVersionMessage'], 'package.json')
-    )
+  # condition: |
+  #   or(
+  #     contains(variables['Build.SourceVersionMessage'], 'src'),
+  #     contains(variables['Build.SourceVersionMessage'], 'Dockerfile'),
+  #     contains(variables['Build.SourceVersionMessage'], 'package.json')
+  #   )
   jobs:
     - job: build
       displayName: 'Building and testing'
 
       steps:
-        - script: |
-            sudo apt-get update
-            sudo apt-get install wget apt-transport-https gnupg lsb-release -y
-            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-            echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
-            sudo apt-get update
-            sudo apt-get install trivy -y  
-          displayName: 'Install Trivy'  
+        # - script: |
+        #     sudo apt-get update
+        #     sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+        #     wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+        #     echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+        #     sudo apt-get update
+        #     sudo apt-get install trivy -y  
+        #   displayName: 'Install Trivy'  
 
-        - script: trivy --version
-          displayName: 'Check Trivy version'
+        # - script: trivy --version
+        #   displayName: 'Check Trivy version'
 
         - task: Docker@2
           displayName: 'Build docker image'  
@@ -56,16 +56,16 @@ stages:
             arguments: |
               --build-arg TMDB_V3_API_KEY=$(TMDB_V3_API_KEY)
 
-        - task: CmdLine@2
-          displayName: 'Scanning image'
+        - task: Bash@3
+          displayName: 'Trivy Scan'
           inputs:
-            script: |
-              trivy image $(dockerimagerepo):$(dockerImagetag) -o trivy-report.xml
-
+            filePath: 'Scripts/trivy-scan.sh'
+            arguments: '$(dockerimagerepo):$(dockerImagetag)'
+    
         - task: PublishPipelineArtifact@1
           displayName: 'Publish Trivy Report'
           inputs:
-            targetPath: 'trivy-report.xml'
+            targetPath: 'Security/trivy-report.xml'
             artifact: 'TrivyReport'
 
         - task: Docker@2
@@ -132,6 +132,11 @@ stages:
             filePath: 'Scripts/trivy-scan.sh'
             arguments: '$(dockerimagerepo):$(dockerImagetag)'
 
+        - task: PublishPipelineArtifact@1
+          displayName: 'Publish Trivy Report'
+          inputs:
+            targetPath: 'Security/trivy-report1.xml'
+            artifact: 'TrivyReport'
 
 
 # - stage: CD
